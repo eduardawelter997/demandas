@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#4f46e5" />
+  <title>Demandas</title>
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📝</text></svg>" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="logo">📝</span>
+      <div>
+        <h1>Demandas</h1>
+        <span id="board-label" class="board-label"></span>
+      </div>
+    </div>
+    <div class="topbar-actions">
+      <span id="conn-status" class="conn" title="Conexão">•••</span>
+      <button id="theme-btn" class="icon-btn" title="Tema claro/escuro" aria-label="Alternar tema">🌙</button>
+    </div>
+  </header>
+
+  <!-- Barra de captura rápida -->
+  <section class="capture">
+    <div class="capture-row">
+      <input
+        id="quick-input"
+        type="text"
+        placeholder="Digite uma demanda e Enter… ou use o microfone 🎤"
+        autocomplete="off"
+      />
+      <button id="mic-btn" class="mic-btn" title="Falar (a IA estrutura pra você)" aria-label="Gravar voz">🎤</button>
+      <button id="add-btn" class="add-btn" title="Adicionar">Adicionar</button>
+    </div>
+    <div class="capture-meta">
+      <select id="quick-category" title="Categoria" aria-label="Categoria"></select>
+      <div class="prio-pick" role="group" aria-label="Prioridade">
+        <button type="button" class="prio" data-prio="" data-active="true">Sem prioridade</button>
+        <button type="button" class="prio prio-baixa" data-prio="baixa">Baixa</button>
+        <button type="button" class="prio prio-media" data-prio="media">Média</button>
+        <button type="button" class="prio prio-alta" data-prio="alta">Alta</button>
+      </div>
+    </div>
+    <div id="mic-hint" class="mic-hint" hidden></div>
+  </section>
+
+  <!-- Filtros -->
+  <section class="filters">
+    <div class="filter-group" id="filter-status">
+      <button class="chip" data-status="abertas" data-active="true">Abertas</button>
+      <button class="chip" data-status="concluidas">Concluídas</button>
+      <button class="chip" data-status="todas">Todas</button>
+    </div>
+    <select id="filter-category" class="filter-select" title="Filtrar categoria">
+      <option value="">Todas as categorias</option>
+    </select>
+    <input id="filter-search" class="filter-select" type="search" placeholder="Buscar…" />
+  </section>
+
+  <!-- Lista -->
+  <main>
+    <ul id="list" class="list"></ul>
+    <p id="empty" class="empty" hidden>Nenhuma demanda aqui ainda. Anote a primeira lá em cima 👆</p>
+    <p id="setup-warning" class="setup-warning" hidden></p>
+  </main>
+
+  <footer class="foot">
+    <span id="count" class="count"></span>
+    <button id="export-btn" class="link-btn">Exportar JSON</button>
+  </footer>
+
+  <!-- Supabase JS client -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <!-- Sua configuração (crie config.js a partir de config.example.js) -->
+  <script src="config.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

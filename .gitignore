@@ -1,0 +1,11 @@
+# Config real com suas chaves — NÃO versionar. Use config.example.js como modelo.
+config.js
+
+# Sistema
+.DS_Store
+Thumbs.db
+
+# Supabase local
+.env
+supabase/.temp/
+node_modules/
