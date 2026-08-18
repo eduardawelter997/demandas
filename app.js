@@ -541,6 +541,7 @@
   }
 
   function setConn(on) {
+    if (!connStatus) return; // indicador removido do cabeçalho
     if (on === null) { connStatus.textContent = "conectando…"; connStatus.removeAttribute("data-on"); return; }
     connStatus.textContent = on ? "ao vivo" : "offline";
     connStatus.setAttribute("data-on", on ? "true" : "false");
