@@ -26,6 +26,7 @@
     </div>
     <div class="topbar-actions">
       <span id="conn-status" class="conn" title="Conexão">•••</span>
+      <button id="me-btn" class="me-btn" title="Definir/trocar seu nome">👤 <span id="me-name">Seu nome</span></button>
       <button id="theme-btn" class="icon-btn" title="Tema claro/escuro" aria-label="Alternar tema">🌙</button>
     </div>
   </header>
@@ -64,6 +65,9 @@
     <select id="filter-category" class="filter-select" title="Filtrar categoria">
       <option value="">Todas as categorias</option>
     </select>
+    <select id="filter-author" class="filter-select" title="Filtrar por pessoa">
+      <option value="">Todas as pessoas</option>
+    </select>
     <input id="filter-search" class="filter-select" type="search" placeholder="Buscar…" />
   </section>
 
@@ -78,6 +82,38 @@
     <span id="count" class="count"></span>
     <button id="export-btn" class="link-btn">Exportar JSON</button>
   </footer>
+
+  <!-- Telinha de edição -->
+  <div id="edit-overlay" class="overlay" hidden>
+    <div class="modal" role="dialog" aria-label="Editar demanda">
+      <h3>Editar demanda</h3>
+      <label class="fld">
+        <span>Demanda</span>
+        <input id="edit-title" type="text" />
+      </label>
+      <label class="fld">
+        <span>Detalhes (opcional)</span>
+        <textarea id="edit-notes" rows="3" placeholder="Anotações extras…"></textarea>
+      </label>
+      <label class="fld">
+        <span>Categoria</span>
+        <select id="edit-category"></select>
+      </label>
+      <div class="fld">
+        <span>Prioridade</span>
+        <div class="prio-pick" id="edit-prio" role="group" aria-label="Prioridade">
+          <button type="button" class="prio" data-prio="">Sem prioridade</button>
+          <button type="button" class="prio prio-baixa" data-prio="baixa">Baixa</button>
+          <button type="button" class="prio prio-media" data-prio="media">Média</button>
+          <button type="button" class="prio prio-alta" data-prio="alta">Alta</button>
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button id="edit-cancel" class="btn-ghost">Cancelar</button>
+        <button id="edit-save" class="btn-primary">Salvar</button>
+      </div>
+    </div>
+  </div>
 
   <!-- Supabase JS client -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>

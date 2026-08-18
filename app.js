@@ -16,14 +16,17 @@
     !cfg.SUPABASE_URL.includes("COLE_AQUI");
   const BOARD = (cfg.BOARD || "geral").trim() || "geral";
 
-  const DEFAULT_CATEGORIES = ["Geral", "Trabalho", "Pessoal", "Financeiro", "Urgente", "Ideias"];
+  const DEFAULT_CATEGORIES = ["Pessoal", "Trabalho", "Financeiro", "Mercado", "Farmácia", "Casa", "Carro", "Gatos", "Geral"];
 
   // ── Estado ────────────────────────────────────────────────────
   let supabase = null;
   let demands = [];
   let filterStatus = "abertas";
   let filterCategory = "";
+  let filterAuthor = "";
   let searchTerm = "";
+  let editingId = null;
+  let editPriority = "";
   let quickPriority = ""; // "", "baixa", "media", "alta"
 
   // Nome de quem está usando (para o campo "author"). Fica só no navegador.
@@ -37,6 +40,7 @@
   const quickInput = $("#quick-input");
   const quickCategory = $("#quick-category");
   const filterCategoryEl = $("#filter-category");
+  const filterAuthorEl = $("#filter-author");
   const micBtn = $("#mic-btn");
   const micHint = $("#mic-hint");
   const connStatus = $("#conn-status");
@@ -53,6 +57,7 @@
     updateThemeBtn();
     $("#board-label").textContent = "Quadro: " + BOARD;
     renderCategoryOptions();
+    renderMeName();
     wireEvents();
 
     if (!hasConfig) {
@@ -309,6 +314,68 @@
     quickCategory.value = name;
   }
 
+  // ── Filtro por pessoa ─────────────────────────────────────────
+  function renderAuthorOptions() {
+    const authors = Array.from(new Set(demands.map((d) => d.author).filter(Boolean))).sort();
+    const cur = filterAuthorEl.value;
+    filterAuthorEl.innerHTML =
+      `<option value="">Todas as pessoas</option>` +
+      authors.map((a) => `<option value="${esc(a)}">👤 ${esc(a)}</option>`).join("");
+    if (authors.includes(cur)) filterAuthorEl.value = cur;
+  }
+
+  // ── Nome de quem está usando ──────────────────────────────────
+  function renderMeName() {
+    $("#me-name").textContent = authorName || "Seu nome";
+  }
+  function changeMyName() {
+    const n = prompt("Seu nome (aparece nas demandas que você criar):", authorName || "");
+    if (n === null) return;
+    authorName = n.trim();
+    safeSet("demandas.author", authorName);
+    renderMeName();
+  }
+
+  // ── Editar demanda (telinha) ──────────────────────────────────
+  function openEdit(id) {
+    const d = demands.find((x) => x.id === id);
+    if (!d) return;
+    editingId = id;
+    $("#edit-title").value = d.title || "";
+    $("#edit-notes").value = d.notes || "";
+    // categorias no select do modal
+    const cats = currentCategories();
+    const sel = $("#edit-category");
+    sel.innerHTML = cats.map((c) => `<option value="${esc(c)}">${esc(c)}</option>`).join("");
+    if (!cats.includes(d.category)) {
+      sel.innerHTML += `<option value="${esc(d.category)}">${esc(d.category)}</option>`;
+    }
+    sel.value = d.category || "Geral";
+    setEditPriority(d.priority || "");
+    $("#edit-overlay").hidden = false;
+    setTimeout(() => $("#edit-title").focus(), 30);
+  }
+  function closeEdit() { editingId = null; $("#edit-overlay").hidden = true; }
+  function setEditPriority(p) {
+    editPriority = p || "";
+    document.querySelectorAll("#edit-prio .prio").forEach((b) =>
+      b.setAttribute("data-active", (b.dataset.prio || "") === editPriority ? "true" : "false")
+    );
+  }
+  function saveEdit() {
+    if (!editingId) return;
+    const title = $("#edit-title").value.trim();
+    if (!title) { $("#edit-title").focus(); return; }
+    const notes = $("#edit-notes").value.trim();
+    updateField(editingId, {
+      title,
+      notes: notes || null,
+      category: $("#edit-category").value || "Geral",
+      priority: editPriority || null,
+    });
+    closeEdit();
+  }
+
   // ── Prioridade (botões) ───────────────────────────────────────
   function setQuickPriority(p) {
     quickPriority = p || "";
@@ -323,6 +390,7 @@
       if (filterStatus === "abertas" && d.status !== "aberta") return false;
       if (filterStatus === "concluidas" && d.status !== "concluida") return false;
       if (filterCategory && d.category !== filterCategory) return false;
+      if (filterAuthor && (d.author || "") !== filterAuthor) return false;
       if (searchTerm) {
         const hay = (d.title + " " + (d.notes || "") + " " + d.category).toLowerCase();
         if (!hay.includes(searchTerm)) return false;
@@ -338,6 +406,7 @@
       return new Date(b.created_at) - new Date(a.created_at);
     });
 
+    renderAuthorOptions();
     listEl.innerHTML = items.map(cardHTML).join("");
     emptyEl.hidden = items.length !== 0 || !hasConfig;
     const abertas = demands.filter((d) => d.status === "aberta").length;
@@ -364,7 +433,7 @@
           </div>
         </div>
         <div class="card-actions">
-          <button class="mini-btn" data-action="cycle-prio" title="Mudar prioridade">🚩</button>
+          <button class="mini-btn" data-action="edit" title="Editar">✏️</button>
           <button class="mini-btn" data-action="delete" title="Apagar">🗑️</button>
         </div>
       </li>`;
@@ -397,7 +466,22 @@
       render();
     });
     filterCategoryEl.addEventListener("change", () => { filterCategory = filterCategoryEl.value; render(); });
+    filterAuthorEl.addEventListener("change", () => { filterAuthor = filterAuthorEl.value; render(); });
     $("#filter-search").addEventListener("input", (e) => { searchTerm = e.target.value.trim().toLowerCase(); render(); });
+
+    // Nome do usuário
+    $("#me-btn").addEventListener("click", changeMyName);
+
+    // Telinha de edição
+    $("#edit-save").addEventListener("click", saveEdit);
+    $("#edit-cancel").addEventListener("click", closeEdit);
+    $("#edit-overlay").addEventListener("click", (e) => { if (e.target.id === "edit-overlay") closeEdit(); });
+    document.querySelectorAll("#edit-prio .prio").forEach((b) =>
+      b.addEventListener("click", () => setEditPriority(b.dataset.prio || ""))
+    );
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && !$("#edit-overlay").hidden) closeEdit();
+    });
 
     // Delegação de cliques na lista
     listEl.addEventListener("click", (e) => {
@@ -406,16 +490,7 @@
       const action = e.target.dataset.action;
       if (action === "toggle") toggleDone(id, e.target.checked);
       else if (action === "delete") { if (confirm("Apagar esta demanda?")) removeDemand(id); }
-      else if (action === "cycle-prio") {
-        const order = ["", "baixa", "media", "alta"];
-        const d = demands.find((x) => x.id === id);
-        const next = order[(order.indexOf(d.priority || "") + 1) % order.length];
-        updateField(id, { priority: next || null });
-      } else if (action === "edit-title") {
-        const d = demands.find((x) => x.id === id);
-        const nv = prompt("Editar demanda:", d.title);
-        if (nv !== null && nv.trim()) updateField(id, { title: nv.trim() });
-      }
+      else if (action === "edit" || action === "edit-title") openEdit(id);
     });
 
     $("#theme-btn").addEventListener("click", toggleTheme);
@@ -441,6 +516,7 @@
     const n = prompt("Seu nome (aparece nas demandas que você criar). Opcional:");
     if (n && n.trim()) { authorName = n.trim(); safeSet("demandas.author", authorName); }
     else authorName = ""; // segue sem nome
+    renderMeName();
   }
 
   function exportJSON() {
