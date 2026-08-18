@@ -13,7 +13,7 @@
 
 window.APP_CONFIG = {
   // URL do seu projeto Supabase, ex: https://abcdefgh.supabase.co
-  SUPABASE_URL: "https://jcxznqdzletaayrliyiu.supabase.co/rest/v1/",
+  SUPABASE_URL: "https://jcxznqdzletaayrliyiu.supabase.co",
 
   // Chave pública "anon" do projeto (Settings → API → anon public)
   SUPABASE_ANON_KEY: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpjeHpucWR6bGV0YWF5cmxpeWl1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcwNjgwMjMsImV4cCI6MjEwMjY0NDAyM30.exI_BVtt1yDYcqVQAvtqvUylc4z7-3YY4zdezfZWiSQ",
